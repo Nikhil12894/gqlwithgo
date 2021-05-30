@@ -1,0 +1,30 @@
+type Vachil {
+  id: ID!
+  type: String!
+  brand: String!
+  regNo: User!
+  capacity: Nu
+}
+
+type User {
+  id: ID!
+  name: String!
+}
+
+type Query {
+  vachil: [Vachil!]!
+}
+
+input NewVachil {
+  title: String!
+  url: String!
+  userId: String!
+}
+
+type Mutation {
+  createVachil(input: NewVachil!): Vachil!
+}
+
+type Subscription {
+  videoAdded(repoFullName: String!): Vachil
+}
