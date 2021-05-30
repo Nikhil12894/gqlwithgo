@@ -15,7 +15,7 @@ func ConnectDataBase(vender string, dbname string) {
 	}
 	database.DB().SetMaxIdleConns(20)
 	database.DB().SetMaxOpenConns(200)
-	database.AutoMigrate(&model.Vachil{})
+	database.AutoMigrate(&model.Vachil{}, &model.Booking{}, &model.TotalPrice{}, &model.User{})
 
 	DB = database
 }
