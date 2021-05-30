@@ -4,6 +4,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/Nikhil12894/gqlwithgo/config"
+	db "github.com/Nikhil12894/gqlwithgo/dbHandler"
 	"github.com/Nikhil12894/gqlwithgo/handler"
 	"github.com/gin-gonic/gin"
 )
@@ -15,6 +17,11 @@ func main() {
 }
 
 func runApp() {
+	configuration, err := config.FromFile("config.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+	db.ConnectDataBase(configuration.DBConfig.Vender, configuration.DBConfig.DbName)
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort

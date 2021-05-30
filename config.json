@@ -1,5 +1,11 @@
 {
-  "server": {
-    "port": "8080"
+  "dbconfig": {
+    "port": "8080",
+    "dbname": "test.db",
+    "vender": "sqlite3"
+  },
+  "serverconfig": {
+    "port": "9090",
+    "host": "192.168.29.88"
   }
 }

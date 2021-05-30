@@ -2,20 +2,56 @@
 
 package model
 
+import (
+	"time"
+)
+
+type Booking struct {
+	ID         string      `json:"id"`
+	StartDate  time.Time   `json:"startDate"`
+	EndDate    time.Time   `json:"endDate"`
+	User       *User       `json:"user"`
+	Vachil     *Vachil     `json:"vachil"`
+	TotalPrice *TotalPrice `json:"totalPrice"`
+}
+
+type NewBooking struct {
+	StartDate time.Time `json:"startDate"`
+	EndDate   time.Time `json:"endDate"`
+	UserID    int       `json:"userID"`
+	VachilID  int       `json:"vachilID"`
+}
+
 type NewVachil struct {
-	Title  string `json:"title"`
-	URL    string `json:"url"`
-	UserID string `json:"userId"`
+	Type      string  `json:"type"`
+	Brand     string  `json:"brand"`
+	RegNo     string  `json:"regNo"`
+	Capacity  int     `json:"capacity"`
+	UnitPrice float64 `json:"unitPrice"`
+}
+
+type TotalPrice struct {
+	ServiceCharge float64 `json:"serviceCharge"`
+	UnitPrice     float64 `json:"unitPrice"`
+	TTLDays       int     `json:"ttlDays"`
+	Price         float64 `json:"price"`
 }
 
 type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID       string     `json:"id"`
+	Name     string     `json:"name"`
+	Email    string     `json:"email"`
+	Mobile   string     `json:"mobile"`
+	IsActive bool       `json:"isActive"`
+	UserType string     `json:"userType"`
+	Booking  []*Booking `json:"booking"`
 }
 
 type Vachil struct {
-	ID     string `json:"id"`
-	Title  string `json:"title"`
-	URL    string `json:"url"`
-	Author *User  `json:"author"`
+	ID        string  `json:"id"`
+	Type      string  `json:"type"`
+	Brand     string  `json:"brand"`
+	RegNo     string  `json:"regNo"`
+	Capacity  int     `json:"capacity"`
+	UnitPrice float64 `json:"unitPrice"`
 }

@@ -2,29 +2,72 @@ type Vachil {
   id: ID!
   type: String!
   brand: String!
-  regNo: User!
-  capacity: Nu
+  regNo: String!
+  capacity: Int!
+  unitPrice: Float!
 }
 
 type User {
   id: ID!
   name: String!
+  email: String!
+  mobile: String!
+  isActive: Boolean!
+  userType: String! # ADMIN  USER
+  booking: [Booking!]!
+}
+type TotalPrice {
+  serviceCharge: Float!
+  unitPrice: Float!
+  ttlDays: Int!
+  price: Float!
+}
+
+scalar Time
+
+type Booking {
+  id: ID!
+  startDate: Time!
+  endDate: Time!
+  user: User!
+  vachil: Vachil!
+  totalPrice: TotalPrice!
 }
 
 type Query {
   vachil: [Vachil!]!
+  vachilWithType(type: String!): [Vachil!]!
+  vachilWithTypeCapacity(type: String!, capacity: Int!): [Vachil!]!
+  avelebleVachilWithType(
+    type: String!
+    startDate: Time!
+    endDate: Time!
+  ): [Vachil!]!
+  avelableVachilWithTypeCapacity(
+    type: String!
+    capacity: Int!
+    startDate: Time!
+    endDate: Time!
+  ): [Vachil!]!
+  allBooking(startDate: Time!, endDate: Time!): [Booking!]!
 }
 
 input NewVachil {
-  title: String!
-  url: String!
-  userId: String!
+  type: String!
+  brand: String!
+  regNo: String!
+  capacity: Int!
+  unitPrice: Float!
+}
+
+input NewBooking {
+  startDate: Time!
+  endDate: Time!
+  userID: Int!
+  vachilID: Int!
 }
 
 type Mutation {
   createVachil(input: NewVachil!): Vachil!
-}
-
-type Subscription {
-  videoAdded(repoFullName: String!): Vachil
+  createBooking(input: NewBooking!): Booking!
 }

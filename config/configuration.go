@@ -6,9 +6,15 @@ import (
 )
 
 type Config struct {
+	DBConfig struct {
+		Port   string `json:"port"`
+		DbName string `json:"dbname"`
+		Vender string `json:"vender"`
+	} `json:"dbconfig"`
 	Server struct {
 		Port string `json:"port"`
-	} `json:"server"`
+		Host string `json:"host"`
+	} `json:"serverconfig"`
 }
 
 func FromFile(path string) (*Config, error) {
