@@ -68,6 +68,7 @@ type ComplexityRoot struct {
 	}
 
 	TotalPrice struct {
+		ID            func(childComplexity int) int
 		Price         func(childComplexity int) int
 		ServiceCharge func(childComplexity int) int
 		TTLDays       func(childComplexity int) int
@@ -255,6 +256,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.VachilWithTypeCapacity(childComplexity, args["type"].(string), args["capacity"].(int)), true
 
+	case "TotalPrice.id":
+		if e.complexity.TotalPrice.ID == nil {
+			break
+		}
+
+		return e.complexity.TotalPrice.ID(childComplexity), true
+
 	case "TotalPrice.price":
 		if e.complexity.TotalPrice.Price == nil {
 			break
@@ -439,7 +447,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 
 var sources = []*ast.Source{
 	{Name: "graph/schema.graphqls", Input: `type Vachil {
-  id: ID!
+  id: Int!
   type: String!
   brand: String!
   regNo: String!
@@ -448,7 +456,7 @@ var sources = []*ast.Source{
 }
 
 type User {
-  id: ID!
+  id: Int!
   name: String!
   email: String!
   mobile: String!
@@ -457,6 +465,7 @@ type User {
   booking: [Booking!]!
 }
 type TotalPrice {
+  id: Int!
   serviceCharge: Float!
   unitPrice: Float!
   ttlDays: Int!
@@ -466,7 +475,7 @@ type TotalPrice {
 scalar Time
 
 type Booking {
-  id: ID!
+  id: Int!
   startDate: Time!
   endDate: Time!
   user: User!
@@ -770,9 +779,9 @@ func (ec *executionContext) _Booking_id(ctx context.Context, field graphql.Colle
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Booking_startDate(ctx context.Context, field graphql.CollectedField, obj *model.Booking) (ret graphql.Marshaler) {
@@ -1350,6 +1359,41 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _TotalPrice_id(ctx context.Context, field graphql.CollectedField, obj *model.TotalPrice) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "TotalPrice",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _TotalPrice_serviceCharge(ctx context.Context, field graphql.CollectedField, obj *model.TotalPrice) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1520,9 +1564,9 @@ func (ec *executionContext) _User_id(ctx context.Context, field graphql.Collecte
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _User_name(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
@@ -1765,9 +1809,9 @@ func (ec *executionContext) _Vachil_id(ctx context.Context, field graphql.Collec
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Vachil_type(ctx context.Context, field graphql.CollectedField, obj *model.Vachil) (ret graphql.Marshaler) {
@@ -3349,6 +3393,11 @@ func (ec *executionContext) _TotalPrice(ctx context.Context, sel ast.SelectionSe
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("TotalPrice")
+		case "id":
+			out.Values[i] = ec._TotalPrice_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "serviceCharge":
 			out.Values[i] = ec._TotalPrice_serviceCharge(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -3807,21 +3856,6 @@ func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v inter
 
 func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
 	res := graphql.MarshalFloat(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-	}
-	return res
-}
-
-func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
-	res, err := graphql.UnmarshalID(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalID(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")

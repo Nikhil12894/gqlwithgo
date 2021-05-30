@@ -1,5 +1,5 @@
 type Vachil {
-  id: ID!
+  id: Int!
   type: String!
   brand: String!
   regNo: String!
@@ -8,7 +8,7 @@ type Vachil {
 }
 
 type User {
-  id: ID!
+  id: Int!
   name: String!
   email: String!
   mobile: String!
@@ -17,6 +17,7 @@ type User {
   booking: [Booking!]!
 }
 type TotalPrice {
+  id: Int!
   serviceCharge: Float!
   unitPrice: Float!
   ttlDays: Int!
@@ -26,7 +27,7 @@ type TotalPrice {
 scalar Time
 
 type Booking {
-  id: ID!
+  id: Int!
   startDate: Time!
   endDate: Time!
   user: User!

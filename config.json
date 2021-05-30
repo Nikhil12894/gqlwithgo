@@ -1,7 +1,7 @@
 {
   "dbconfig": {
     "port": "8080",
-    "dbname": "test.db",
+    "dbname": "gqldb.db",
     "vender": "sqlite3"
   },
   "serverconfig": {

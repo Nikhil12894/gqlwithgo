@@ -7,7 +7,7 @@ import (
 )
 
 type Booking struct {
-	ID         string      `json:"id"`
+	ID         int         `json:"id"`
 	StartDate  time.Time   `json:"startDate"`
 	EndDate    time.Time   `json:"endDate"`
 	User       *User       `json:"user"`
@@ -31,6 +31,7 @@ type NewVachil struct {
 }
 
 type TotalPrice struct {
+	ID            int     `json:"id"`
 	ServiceCharge float64 `json:"serviceCharge"`
 	UnitPrice     float64 `json:"unitPrice"`
 	TTLDays       int     `json:"ttlDays"`
@@ -38,7 +39,7 @@ type TotalPrice struct {
 }
 
 type User struct {
-	ID       string     `json:"id"`
+	ID       int        `json:"id"`
 	Name     string     `json:"name"`
 	Email    string     `json:"email"`
 	Mobile   string     `json:"mobile"`
@@ -48,7 +49,7 @@ type User struct {
 }
 
 type Vachil struct {
-	ID        string  `json:"id"`
+	ID        int     `json:"id"`
 	Type      string  `json:"type"`
 	Brand     string  `json:"brand"`
 	RegNo     string  `json:"regNo"`

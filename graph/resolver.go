@@ -1,9 +1,8 @@
 package graph
 
-import "github.com/Nikhil12894/gqlwithgo/graph/model"
+import "github.com/jinzhu/gorm"
 
 //go:generate go run github.com/99designs/gqlgen
 type Resolver struct {
-	Vachils  []*model.Vachil
-	Bookings []*model.Booking
+	DB *gorm.DB
 }
