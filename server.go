@@ -18,7 +18,7 @@ func main() {
 }
 
 func runApp() {
-	configuration, err := config.FromFile("config.json")
+	configuration, err := config.FromFile("./config.json")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -36,6 +36,6 @@ func runApp() {
 	r.POST("/testquery", handler.Testquery)
 	r.POST("/query", handler.GraphqlHandler(), auth.Middleware())
 	r.GET("/", handler.PlaygroundHandler())
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(r.Run(":" + port))
+	log.Printf("connect to http://localhost:%s/ for GraphQL playground", configuration.Server.Port)
+	log.Fatal(r.Run(":" + configuration.Server.Port))
 }

@@ -12,7 +12,7 @@ import (
 func Middleware() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
-		header := c.Request.Header.Get("Authorization")
+		header := c.Request.Header.Get("token")
 		// Allow unauthenticated users in
 		if header == "" {
 			c.JSON(http.StatusForbidden, "token is empety")
