@@ -3,16 +3,26 @@
 package model
 
 import (
+	"fmt"
+	"io"
+	"strconv"
 	"time"
 )
 
 type Booking struct {
-	ID         int         `json:"id"`
-	StartDate  time.Time   `json:"startDate"`
-	EndDate    time.Time   `json:"endDate"`
-	User       *User       `json:"user"`
-	Vachil     *Vachil     `json:"vachil"`
-	TotalPrice *TotalPrice `json:"totalPrice"`
+	ID           int       `json:"id"`
+	CreatedAt    time.Time `json:"CreatedAt"`
+	UpdatedAt    time.Time `json:"UpdatedAt"`
+	StartDate    time.Time `json:"startDate"`
+	EndDate      time.Time `json:"endDate"`
+	UserID       int       `json:"userID"`
+	VachilID     int       `json:"vachilID"`
+	TotalPriceID int       `json:"totalPriceID"`
+}
+
+type Login struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 type NewBooking struct {
@@ -22,37 +32,100 @@ type NewBooking struct {
 	VachilID  int       `json:"vachilID"`
 }
 
+type NewUser struct {
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Email     string `json:"email"`
+	Mobile    string `json:"mobile"`
+	Password  string `json:"password"`
+}
+
 type NewVachil struct {
 	Type      string  `json:"type"`
 	Brand     string  `json:"brand"`
+	Name      string  `json:"name"`
 	RegNo     string  `json:"regNo"`
 	Capacity  int     `json:"capacity"`
 	UnitPrice float64 `json:"unitPrice"`
+}
+
+type RefreshTokenInput struct {
+	Token string `json:"token"`
 }
 
 type TotalPrice struct {
-	ID            int     `json:"id"`
-	ServiceCharge float64 `json:"serviceCharge"`
-	UnitPrice     float64 `json:"unitPrice"`
-	TTLDays       int     `json:"ttlDays"`
-	Price         float64 `json:"price"`
+	ID            int       `json:"id"`
+	CreatedAt     time.Time `json:"CreatedAt"`
+	UpdatedAt     time.Time `json:"UpdatedAt"`
+	ServiceCharge float64   `json:"serviceCharge"`
+	UnitPrice     float64   `json:"unitPrice"`
+	TTLDays       int       `json:"ttlDays"`
+	Price         float64   `json:"price"`
 }
 
 type User struct {
-	ID       int        `json:"id"`
-	Name     string     `json:"name"`
-	Email    string     `json:"email"`
-	Mobile   string     `json:"mobile"`
-	IsActive bool       `json:"isActive"`
-	UserType string     `json:"userType"`
-	Booking  []*Booking `json:"booking"`
+	ID        int        `json:"id"`
+	CreatedAt time.Time  `json:"CreatedAt"`
+	UpdatedAt time.Time  `json:"UpdatedAt"`
+	FirstName string     `json:"firstName"`
+	LastName  string     `json:"lastName"`
+	Email     string     `json:"email"`
+	Mobile    string     `json:"mobile"`
+	Password  string     `json:"password"`
+	IsActive  bool       `json:"isActive"`
+	UserType  string     `json:"userType"`
+	Booking   []*Booking `json:"booking"`
 }
 
 type Vachil struct {
-	ID        int     `json:"id"`
-	Type      string  `json:"type"`
-	Brand     string  `json:"brand"`
-	RegNo     string  `json:"regNo"`
-	Capacity  int     `json:"capacity"`
-	UnitPrice float64 `json:"unitPrice"`
+	ID        int       `json:"id"`
+	CreatedAt time.Time `json:"CreatedAt"`
+	UpdatedAt time.Time `json:"UpdatedAt"`
+	Type      string    `json:"type"`
+	Brand     string    `json:"brand"`
+	RegNo     string    `json:"regNo"`
+	Name      string    `json:"name"`
+	Capacity  int       `json:"capacity"`
+	UnitPrice float64   `json:"unitPrice"`
+}
+
+type Role string
+
+const (
+	RoleAdmin Role = "ADMIN"
+	RoleUser  Role = "USER"
+)
+
+var AllRole = []Role{
+	RoleAdmin,
+	RoleUser,
+}
+
+func (e Role) IsValid() bool {
+	switch e {
+	case RoleAdmin, RoleUser:
+		return true
+	}
+	return false
+}
+
+func (e Role) String() string {
+	return string(e)
+}
+
+func (e *Role) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Role(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Role", str)
+	}
+	return nil
+}
+
+func (e Role) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }

@@ -8,17 +8,23 @@ import (
 	"fmt"
 	"time"
 
+	db "github.com/Nikhil12894/gqlwithgo/dbHandler"
 	"github.com/Nikhil12894/gqlwithgo/graph/generated"
 	"github.com/Nikhil12894/gqlwithgo/graph/model"
+	"github.com/Nikhil12894/gqlwithgo/hash"
+	"github.com/Nikhil12894/gqlwithgo/jwt"
 )
 
 func (r *mutationResolver) CreateVachil(ctx context.Context, input model.NewVachil) (*model.Vachil, error) {
 	vachil := &model.Vachil{
 		Type:      input.Type,
 		Brand:     input.Brand,
+		Name:      input.Name,
 		RegNo:     input.RegNo,
 		Capacity:  input.Capacity,
 		UnitPrice: input.UnitPrice,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 	// Create vachil/
 	err := r.DB.Create(&vachil).Error
@@ -28,15 +34,102 @@ func (r *mutationResolver) CreateVachil(ctx context.Context, input model.NewVach
 	return vachil, nil
 }
 
+func (r *mutationResolver) UpdateVachil(ctx context.Context, vachilID int, input model.NewVachil) (*model.Vachil, error) {
+	vachil := &model.Vachil{
+		Type:      input.Type,
+		Brand:     input.Brand,
+		Name:      input.Name,
+		RegNo:     input.RegNo,
+		Capacity:  input.Capacity,
+		UnitPrice: input.UnitPrice,
+		ID:        vachilID,
+		UpdatedAt: time.Now(),
+	}
+	// update vachil/
+	err := r.DB.Save(&vachil).Error
+	if err != nil {
+		return nil, err
+	}
+	return vachil, nil
+}
+
+func (r *mutationResolver) DeleteVachil(ctx context.Context, vachilID int) (bool, error) {
+	err := r.DB.Where("id = ?", vachilID).Delete(&model.Vachil{}).Error
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
 func (r *mutationResolver) CreateBooking(ctx context.Context, input model.NewBooking) (*model.Booking, error) {
 	booking := &model.Booking{
 		StartDate: input.StartDate,
 		EndDate:   input.EndDate,
-		User:      &model.User{ID: input.UserID},
-		Vachil:    &model.Vachil{ID: input.VachilID},
+		UserID:    input.UserID,
+		VachilID:  input.VachilID,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 	r.DB.Create(&booking)
 	return booking, nil
+}
+
+func (r *mutationResolver) UpdateBooking(ctx context.Context, bookingID int, input model.NewBooking) (*model.Booking, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) DeleteBooking(ctx context.Context, bookingID int) (bool, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (string, error) {
+	user := &model.User{
+		FirstName: input.FirstName,
+		LastName:  input.LastName,
+		Email:     input.Email,
+		Mobile:    input.Mobile,
+		Password:  hash.HashPassword(input.Password),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	// Create user/
+	err := r.DB.Create(&user).Error
+	if err != nil {
+		return "", err
+	}
+	token, err := jwt.GenerateToken(user.Email)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
+}
+
+func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string, error) {
+	var user model.User
+	user.Email = input.Username
+	user.Password = input.Password
+	correct := hash.Authenticate(user, db.UserPasswordByName(user.Email))
+	if !correct {
+		// 1
+		return "", &hash.WrongUsernameOrPasswordError{}
+	}
+	token, err := jwt.GenerateToken(user.Email)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
+}
+
+func (r *mutationResolver) RefreshToken(ctx context.Context, input model.RefreshTokenInput) (string, error) {
+	username, err := jwt.ParseToken(input.Token)
+	if err != nil {
+		return "", fmt.Errorf("access denied")
+	}
+	token, err := jwt.GenerateToken(username)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
 }
 
 func (r *queryResolver) Vachil(ctx context.Context) ([]*model.Vachil, error) {
@@ -45,12 +138,33 @@ func (r *queryResolver) Vachil(ctx context.Context) ([]*model.Vachil, error) {
 	return vachils, nil
 }
 
+func (r *queryResolver) VachilWithID(ctx context.Context, typeArg int) (*model.Vachil, error) {
+	var vachil *model.Vachil
+	err := r.DB.Where("id = ?", typeArg).First(&vachil).Error
+	if err != nil {
+		return nil, err
+	}
+	return vachil, nil
+}
+
 func (r *queryResolver) VachilWithType(ctx context.Context, typeArg string) ([]*model.Vachil, error) {
 	var vachils []*model.Vachil
 	if err := r.DB.Where("type = ?", typeArg).Find(&vachils).Error; err != nil {
 		return nil, err
 	}
 	return vachils, nil
+}
+
+func (r *queryResolver) VachilWithBrand(ctx context.Context, brand string) ([]*model.Vachil, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) VachilWithRegNo(ctx context.Context, regNo string) (*model.Vachil, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) VachilWithName(ctx context.Context, name string) ([]*model.Vachil, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *queryResolver) VachilWithTypeCapacity(ctx context.Context, typeArg string, capacity int) ([]*model.Vachil, error) {
@@ -69,6 +183,23 @@ func (r *queryResolver) AllBooking(ctx context.Context, startDate time.Time, end
 	var bookings []*model.Booking
 	r.DB.Find(&bookings)
 	return bookings, nil
+}
+
+func (r *queryResolver) AllBookingWithID(ctx context.Context, userID int) ([]*model.Booking, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) AllActiveBookingWithID(ctx context.Context, userID int) ([]*model.Booking, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) UserWithID(ctx context.Context, userID int) (*model.User, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) UserPasswordByName(ctx context.Context, email string) (string, error) {
+
+	return "", nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

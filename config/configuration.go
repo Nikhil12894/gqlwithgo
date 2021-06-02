@@ -15,6 +15,7 @@ type Config struct {
 		Port string `json:"port"`
 		Host string `json:"host"`
 	} `json:"serverconfig"`
+	IsProd bool `json:"isprod"`
 }
 
 func FromFile(path string) (*Config, error) {

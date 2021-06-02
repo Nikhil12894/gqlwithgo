@@ -1,23 +1,32 @@
 type Vachil {
   id: Int!
+  CreatedAt: Time!
+  UpdatedAt: Time!
   type: String!
   brand: String!
   regNo: String!
+  name: String!
   capacity: Int!
   unitPrice: Float!
 }
 
 type User {
   id: Int!
-  name: String!
+  CreatedAt: Time!
+  UpdatedAt: Time!
+  firstName: String!
+  lastName: String!
   email: String!
   mobile: String!
+  password: String!
   isActive: Boolean!
   userType: String! # ADMIN  USER
   booking: [Booking!]!
 }
 type TotalPrice {
   id: Int!
+  CreatedAt: Time!
+  UpdatedAt: Time!
   serviceCharge: Float!
   unitPrice: Float!
   ttlDays: Int!
@@ -28,16 +37,22 @@ scalar Time
 
 type Booking {
   id: Int!
+  CreatedAt: Time!
+  UpdatedAt: Time!
   startDate: Time!
   endDate: Time!
-  user: User!
-  vachil: Vachil!
-  totalPrice: TotalPrice!
+  userID: Int!
+  vachilID: Int!
+  totalPriceID: Int!
 }
 
 type Query {
   vachil: [Vachil!]!
+  vachilWithId(type: Int!): Vachil!
   vachilWithType(type: String!): [Vachil!]!
+  vachilWithBrand(brand: String!): [Vachil!]!
+  vachilWithRegNo(regNo: String!): Vachil!
+  vachilWithName(name: String!): [Vachil!]!
   vachilWithTypeCapacity(type: String!, capacity: Int!): [Vachil!]!
   avelebleVachilWithType(
     type: String!
@@ -51,11 +66,16 @@ type Query {
     endDate: Time!
   ): [Vachil!]!
   allBooking(startDate: Time!, endDate: Time!): [Booking!]!
+  allBookingWithId(userID: Int!): [Booking!]!
+  allActiveBookingWithId(userID: Int!): [Booking!]!
+  userWithId(userID: Int!): User!
+  userPasswordByName(email: String!): String!
 }
 
 input NewVachil {
   type: String!
   brand: String!
+  name: String!
   regNo: String!
   capacity: Int!
   unitPrice: Float!
@@ -68,7 +88,42 @@ input NewBooking {
   vachilID: Int!
 }
 
+input RefreshTokenInput {
+  token: String!
+}
+
+input NewUser {
+  firstName: String!
+  lastName: String!
+  email: String!
+  mobile: String!
+  password: String!
+}
+
+input Login {
+  username: String!
+  password: String!
+}
+
 type Mutation {
   createVachil(input: NewVachil!): Vachil!
+  updateVachil(vachilId: Int!, input: NewVachil!): Vachil!
+  deleteVachil(vachilId: Int!): Boolean!
   createBooking(input: NewBooking!): Booking!
+  updateBooking(bookingId: Int!, input: NewBooking!): Booking!
+  deleteBooking(bookingId: Int!): Boolean!
+
+  createUser(input: NewUser!): String!
+  login(input: Login!): String!
+  # we'll talk about this in authentication section
+  refreshToken(input: RefreshTokenInput!): String!
+}
+
+#"Prevents access to a field if the user doesnt have the matching role"
+directive @hasRole(role: Role!) on FIELD_DEFINITION
+directive @user(id: ID!) on MUTATION | QUERY | FIELD
+
+enum Role {
+  ADMIN
+  USER
 }

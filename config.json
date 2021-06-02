@@ -7,5 +7,6 @@
   "serverconfig": {
     "port": "9090",
     "host": "192.168.29.88"
-  }
+  },
+  "isprod": false
 }

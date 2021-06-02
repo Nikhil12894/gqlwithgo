@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/Nikhil12894/gqlwithgo/auth"
 	"github.com/Nikhil12894/gqlwithgo/config"
 	db "github.com/Nikhil12894/gqlwithgo/dbHandler"
 	"github.com/Nikhil12894/gqlwithgo/handler"
@@ -21,7 +22,7 @@ func runApp() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	db.ConnectDataBase(configuration.DBConfig.Vender, configuration.DBConfig.DbName)
+	db.ConnectDataBase(configuration.DBConfig.Vender, configuration.DBConfig.DbName, configuration.IsProd)
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort
@@ -29,7 +30,9 @@ func runApp() {
 	// Setting up Gin
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
-	r.POST("/query", handler.GraphqlHandler())
+	r.POST("/register", handler.RegisterUser)
+	r.POST("/login", handler.Login)
+	r.POST("/query", handler.GraphqlHandler(), auth.Middleware())
 	r.GET("/", handler.PlaygroundHandler())
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(r.Run(":" + port))
