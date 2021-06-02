@@ -32,6 +32,8 @@ func runApp() {
 	r := gin.Default()
 	r.POST("/register", handler.RegisterUser)
 	r.POST("/login", handler.Login)
+	r.POST("/refrace", handler.Refrace)
+	r.POST("/testquery", handler.Testquery)
 	r.POST("/query", handler.GraphqlHandler(), auth.Middleware())
 	r.GET("/", handler.PlaygroundHandler())
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)

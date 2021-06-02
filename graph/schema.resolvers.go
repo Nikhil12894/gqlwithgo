@@ -8,11 +8,8 @@ import (
 	"fmt"
 	"time"
 
-	db "github.com/Nikhil12894/gqlwithgo/dbHandler"
 	"github.com/Nikhil12894/gqlwithgo/graph/generated"
 	"github.com/Nikhil12894/gqlwithgo/graph/model"
-	"github.com/Nikhil12894/gqlwithgo/hash"
-	"github.com/Nikhil12894/gqlwithgo/jwt"
 )
 
 func (r *mutationResolver) CreateVachil(ctx context.Context, input model.NewVachil) (*model.Vachil, error) {
@@ -75,61 +72,28 @@ func (r *mutationResolver) CreateBooking(ctx context.Context, input model.NewBoo
 }
 
 func (r *mutationResolver) UpdateBooking(ctx context.Context, bookingID int, input model.NewBooking) (*model.Booking, error) {
-	panic(fmt.Errorf("not implemented"))
+	vachil := &model.Booking{
+		StartDate: input.StartDate,
+		EndDate:   input.EndDate,
+		UserID:    input.UserID,
+		VachilID:  input.VachilID,
+		UpdatedAt: time.Now(),
+		ID:        bookingID,
+	}
+	// update vachil/
+	err := r.DB.Save(&vachil).Error
+	if err != nil {
+		return nil, err
+	}
+	return vachil, nil
 }
 
 func (r *mutationResolver) DeleteBooking(ctx context.Context, bookingID int) (bool, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (string, error) {
-	user := &model.User{
-		FirstName: input.FirstName,
-		LastName:  input.LastName,
-		Email:     input.Email,
-		Mobile:    input.Mobile,
-		Password:  hash.HashPassword(input.Password),
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
-	// Create user/
-	err := r.DB.Create(&user).Error
+	err := r.DB.Where("id = ?", bookingID).Delete(&model.Booking{}).Error
 	if err != nil {
-		return "", err
+		return false, err
 	}
-	token, err := jwt.GenerateToken(user.Email)
-	if err != nil {
-		return "", err
-	}
-	return token, nil
-}
-
-func (r *mutationResolver) Login(ctx context.Context, input model.Login) (string, error) {
-	var user model.User
-	user.Email = input.Username
-	user.Password = input.Password
-	correct := hash.Authenticate(user, db.UserPasswordByName(user.Email))
-	if !correct {
-		// 1
-		return "", &hash.WrongUsernameOrPasswordError{}
-	}
-	token, err := jwt.GenerateToken(user.Email)
-	if err != nil {
-		return "", err
-	}
-	return token, nil
-}
-
-func (r *mutationResolver) RefreshToken(ctx context.Context, input model.RefreshTokenInput) (string, error) {
-	username, err := jwt.ParseToken(input.Token)
-	if err != nil {
-		return "", fmt.Errorf("access denied")
-	}
-	token, err := jwt.GenerateToken(username)
-	if err != nil {
-		return "", err
-	}
-	return token, nil
+	return true, nil
 }
 
 func (r *queryResolver) Vachil(ctx context.Context) ([]*model.Vachil, error) {
@@ -156,19 +120,35 @@ func (r *queryResolver) VachilWithType(ctx context.Context, typeArg string) ([]*
 }
 
 func (r *queryResolver) VachilWithBrand(ctx context.Context, brand string) ([]*model.Vachil, error) {
-	panic(fmt.Errorf("not implemented"))
+	var vachils []*model.Vachil
+	if err := r.DB.Where("Brand = ?", brand).Find(&vachils).Error; err != nil {
+		return nil, err
+	}
+	return vachils, nil
 }
 
 func (r *queryResolver) VachilWithRegNo(ctx context.Context, regNo string) (*model.Vachil, error) {
-	panic(fmt.Errorf("not implemented"))
+	var vachils *model.Vachil
+	if err := r.DB.Where("RegNo = ?", regNo).First(&vachils).Error; err != nil {
+		return nil, err
+	}
+	return vachils, nil
 }
 
 func (r *queryResolver) VachilWithName(ctx context.Context, name string) ([]*model.Vachil, error) {
-	panic(fmt.Errorf("not implemented"))
+	var vachils []*model.Vachil
+	if err := r.DB.Where("Name = ?", name).First(&vachils).Error; err != nil {
+		return nil, err
+	}
+	return vachils, nil
 }
 
 func (r *queryResolver) VachilWithTypeCapacity(ctx context.Context, typeArg string, capacity int) ([]*model.Vachil, error) {
-	panic(fmt.Errorf("not implemented"))
+	var vachils []*model.Vachil
+	if err := r.DB.Where("type = ? AND capacity =? ", typeArg, capacity).First(&vachils).Error; err != nil {
+		return nil, err
+	}
+	return vachils, nil
 }
 
 func (r *queryResolver) AvelebleVachilWithType(ctx context.Context, typeArg string, startDate time.Time, endDate time.Time) ([]*model.Vachil, error) {
@@ -198,7 +178,6 @@ func (r *queryResolver) UserWithID(ctx context.Context, userID int) (*model.User
 }
 
 func (r *queryResolver) UserPasswordByName(ctx context.Context, email string) (string, error) {
-
 	return "", nil
 }
 

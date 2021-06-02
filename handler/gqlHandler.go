@@ -75,3 +75,40 @@ func Login(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, token)
 }
+
+func Refrace(c *gin.Context) {
+	// var m *map{}}{}
+	// if err := c.BindJSON(&m); err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{
+	// 		"message": "parse key heartstrength from http post request error",
+	// 	})
+	// 	return
+	// }
+	// correct := hash.AuthenticateLogin(login, db.UserPasswordByName(login.Username))
+	// if !correct {
+	// 	c.JSON(http.StatusBadRequest, &hash.WrongUsernameOrPasswordError{})
+	// }
+	// token, err := jwt.GenerateToken(login.Username)
+	// if err != nil {
+	// 	c.JSON(http.StatusInternalServerError, err)
+	// }
+	// c.JSON(http.StatusOK, token)
+}
+
+func Testquery(c *gin.Context) {
+	reqbody := map[string]interface{}{}
+	if err := c.BindJSON(&reqbody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "parse key heartstrength from http post request error",
+		})
+		return
+	}
+
+	result := map[string]interface{}{}
+	err := db.DB.Raw(reqbody["query"].(string), 3).Scan(&result).Error
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err)
+	}
+
+	c.JSON(http.StatusOK, result)
+}

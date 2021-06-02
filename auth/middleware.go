@@ -9,12 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var userCtxKey = &contextKey{"user"}
-
-type contextKey struct {
-	name string
-}
-
 func Middleware() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
@@ -37,7 +31,7 @@ func Middleware() gin.HandlerFunc {
 		if err != nil {
 			c.JSON(http.StatusForbidden, "Invalid token")
 		} else {
-			fmt.Print(id.Email)
+			fmt.Println(id.Email)
 		}
 		c.Next()
 	}
