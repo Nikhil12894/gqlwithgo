@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -73,6 +74,7 @@ func Login(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 	}
+	fmt.Println(token)
 	c.JSON(http.StatusOK, token)
 }
 

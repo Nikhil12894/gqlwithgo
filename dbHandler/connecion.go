@@ -60,9 +60,9 @@ func FindVachilById(id int) *model.Vachil {
 }
 
 func UserPasswordByName(email string) string {
-	var hashedPassword string
-	DB.Select("SELECT password FROM user").Where("email=?", email).First(&hashedPassword)
-	return hashedPassword
+	var hashedPassword model.User
+	DB.Where("email=?", email).First(&hashedPassword)
+	return hashedPassword.Password
 }
 
 func UserByEmail(email string) (*model.User, error) {
