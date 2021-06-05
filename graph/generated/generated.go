@@ -58,12 +58,14 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateBooking func(childComplexity int, input model.NewBooking) int
-		CreateVachil  func(childComplexity int, input model.NewVachil) int
-		DeleteBooking func(childComplexity int, bookingID int) int
-		DeleteVachil  func(childComplexity int, vachilID int) int
-		UpdateBooking func(childComplexity int, bookingID int, input model.NewBooking) int
-		UpdateVachil  func(childComplexity int, vachilID int, input model.NewVachil) int
+		CreateBooking          func(childComplexity int, input model.NewBooking) int
+		CreateVachil           func(childComplexity int, input model.NewVachil) int
+		DeleteBooking          func(childComplexity int, bookingID int) int
+		DeleteVachil           func(childComplexity int, vachilID int) int
+		UpdateBooking          func(childComplexity int, bookingID int, input model.NewBooking) int
+		UpdateUserPassword     func(childComplexity int, id int, password string) int
+		UpdateUserProfileImage func(childComplexity int, id int, image string) int
+		UpdateVachil           func(childComplexity int, vachilID int, input model.NewVachil) int
 	}
 
 	Query struct {
@@ -74,6 +76,7 @@ type ComplexityRoot struct {
 		AvelebleVachilWithType         func(childComplexity int, typeArg string, startDate time.Time, endDate time.Time) int
 		UserPasswordByName             func(childComplexity int, email string) int
 		UserWithID                     func(childComplexity int, userID int) int
+		UserWithUserName               func(childComplexity int, userName string) int
 		Vachil                         func(childComplexity int) int
 		VachilWithBrand                func(childComplexity int, brand string) int
 		VachilWithID                   func(childComplexity int, typeArg int) int
@@ -99,6 +102,7 @@ type ComplexityRoot struct {
 		Email     func(childComplexity int) int
 		FirstName func(childComplexity int) int
 		ID        func(childComplexity int) int
+		Image     func(childComplexity int) int
 		IsActive  func(childComplexity int) int
 		LastName  func(childComplexity int) int
 		Mobile    func(childComplexity int) int
@@ -112,6 +116,7 @@ type ComplexityRoot struct {
 		Capacity  func(childComplexity int) int
 		CreatedAt func(childComplexity int) int
 		ID        func(childComplexity int) int
+		Images    func(childComplexity int) int
 		Name      func(childComplexity int) int
 		RegNo     func(childComplexity int) int
 		Type      func(childComplexity int) int
@@ -127,6 +132,8 @@ type MutationResolver interface {
 	CreateBooking(ctx context.Context, input model.NewBooking) (*model.Booking, error)
 	UpdateBooking(ctx context.Context, bookingID int, input model.NewBooking) (*model.Booking, error)
 	DeleteBooking(ctx context.Context, bookingID int) (bool, error)
+	UpdateUserProfileImage(ctx context.Context, id int, image string) (*model.User, error)
+	UpdateUserPassword(ctx context.Context, id int, password string) (*model.User, error)
 }
 type QueryResolver interface {
 	Vachil(ctx context.Context) ([]*model.Vachil, error)
@@ -142,6 +149,7 @@ type QueryResolver interface {
 	AllBookingWithID(ctx context.Context, userID int) ([]*model.Booking, error)
 	AllActiveBookingWithID(ctx context.Context, userID int) ([]*model.Booking, error)
 	UserWithID(ctx context.Context, userID int) (*model.User, error)
+	UserWithUserName(ctx context.Context, userName string) (*model.User, error)
 	UserPasswordByName(ctx context.Context, email string) (string, error)
 }
 
@@ -276,6 +284,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdateBooking(childComplexity, args["bookingId"].(int), args["input"].(model.NewBooking)), true
 
+	case "Mutation.updateUserPassword":
+		if e.complexity.Mutation.UpdateUserPassword == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateUserPassword_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateUserPassword(childComplexity, args["id"].(int), args["password"].(string)), true
+
+	case "Mutation.updateUserProfileImage":
+		if e.complexity.Mutation.UpdateUserProfileImage == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateUserProfileImage_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateUserProfileImage(childComplexity, args["id"].(int), args["image"].(string)), true
+
 	case "Mutation.updateVachil":
 		if e.complexity.Mutation.UpdateVachil == nil {
 			break
@@ -371,6 +403,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.UserWithID(childComplexity, args["userID"].(int)), true
+
+	case "Query.userWithUserName":
+		if e.complexity.Query.UserWithUserName == nil {
+			break
+		}
+
+		args, err := ec.field_Query_userWithUserName_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.UserWithUserName(childComplexity, args["userName"].(string)), true
 
 	case "Query.vachil":
 		if e.complexity.Query.Vachil == nil {
@@ -535,6 +579,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.ID(childComplexity), true
 
+	case "User.image":
+		if e.complexity.User.Image == nil {
+			break
+		}
+
+		return e.complexity.User.Image(childComplexity), true
+
 	case "User.isActive":
 		if e.complexity.User.IsActive == nil {
 			break
@@ -604,6 +655,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Vachil.ID(childComplexity), true
+
+	case "Vachil.images":
+		if e.complexity.Vachil.Images == nil {
+			break
+		}
+
+		return e.complexity.Vachil.Images(childComplexity), true
 
 	case "Vachil.name":
 		if e.complexity.Vachil.Name == nil {
@@ -718,6 +776,7 @@ var sources = []*ast.Source{
   name: String!
   capacity: Int!
   unitPrice: Float!
+  images: [String!]
 }
 
 type User {
@@ -732,6 +791,7 @@ type User {
   isActive: Boolean!
   userType: String! # ADMIN  USER
   booking: [Booking!]!
+  image: String
 }
 type TotalPrice {
   id: Int!
@@ -779,6 +839,7 @@ type Query {
   allBookingWithId(userID: Int!): [Booking!]!
   allActiveBookingWithId(userID: Int!): [Booking!]!
   userWithId(userID: Int!): User!
+  userWithUserName(userName: String!): User!
   userPasswordByName(email: String!): String!
 }
 
@@ -789,6 +850,7 @@ input NewVachil {
   regNo: String!
   capacity: Int!
   unitPrice: Float!
+  images: [String!]
 }
 
 input NewBooking {
@@ -808,6 +870,7 @@ input NewUser {
   email: String!
   mobile: String!
   password: String!
+  image: String
 }
 
 input Login {
@@ -822,6 +885,8 @@ type Mutation {
   createBooking(input: NewBooking!): Booking!
   updateBooking(bookingId: Int!, input: NewBooking!): Booking!
   deleteBooking(bookingId: Int!): Boolean!
+  updateUserProfileImage(id: Int!, image: String!): User!
+  updateUserPassword(id: Int!, password: String!): User!
 }
 
 #"Prevents access to a field if the user doesnt have the matching role"
@@ -951,6 +1016,54 @@ func (ec *executionContext) field_Mutation_updateBooking_args(ctx context.Contex
 		}
 	}
 	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateUserPassword_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["password"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["password"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateUserProfileImage_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["image"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["image"] = arg1
 	return args, nil
 }
 
@@ -1149,6 +1262,21 @@ func (ec *executionContext) field_Query_userWithId_args(ctx context.Context, raw
 		}
 	}
 	args["userID"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_userWithUserName_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["userName"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userName"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userName"] = arg0
 	return args, nil
 }
 
@@ -1873,6 +2001,84 @@ func (ec *executionContext) _Mutation_deleteBooking(ctx context.Context, field g
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_updateUserProfileImage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateUserProfileImage_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateUserProfileImage(rctx, args["id"].(int), args["image"].(string))
+	})
+
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋNikhil12894ᚋgqlwithgoᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateUserPassword(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateUserPassword_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateUserPassword(rctx, args["id"].(int), args["password"].(string))
+	})
+
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋNikhil12894ᚋgqlwithgoᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_vachil(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -2360,6 +2566,45 @@ func (ec *executionContext) _Query_userWithId(ctx context.Context, field graphql
 	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Query().UserWithID(rctx, args["userID"].(int))
+	})
+
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋNikhil12894ᚋgqlwithgoᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_userWithUserName(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_userWithUserName_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().UserWithUserName(rctx, args["userName"].(string))
 	})
 
 	if resTmp == nil {
@@ -3053,6 +3298,35 @@ func (ec *executionContext) _User_booking(ctx context.Context, field graphql.Col
 	return ec.marshalNBooking2ᚕᚖgithubᚗcomᚋNikhil12894ᚋgqlwithgoᚋgraphᚋmodelᚐBookingᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _User_image(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Image, nil
+	})
+
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Vachil_id(ctx context.Context, field graphql.CollectedField, obj *model.Vachil) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -3339,6 +3613,35 @@ func (ec *executionContext) _Vachil_unitPrice(ctx context.Context, field graphql
 	res := resTmp.(float64)
 	fc.Result = res
 	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Vachil_images(ctx context.Context, field graphql.CollectedField, obj *model.Vachil) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Vachil",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Images, nil
+	})
+
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -4450,6 +4753,14 @@ func (ec *executionContext) unmarshalInputNewUser(ctx context.Context, obj inter
 			if err != nil {
 				return it, err
 			}
+		case "image":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image"))
+			it.Image, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -4507,6 +4818,14 @@ func (ec *executionContext) unmarshalInputNewVachil(ctx context.Context, obj int
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("unitPrice"))
 			it.UnitPrice, err = ec.unmarshalNFloat2float64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "images":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("images"))
+			it.Images, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4648,6 +4967,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "deleteBooking":
 			out.Values[i] = ec._Mutation_deleteBooking(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateUserProfileImage":
+			out.Values[i] = ec._Mutation_updateUserProfileImage(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateUserPassword":
+			out.Values[i] = ec._Mutation_updateUserPassword(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -4859,6 +5188,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
+		case "userWithUserName":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_userWithUserName(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "userPasswordByName":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -5011,6 +5354,8 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "image":
+			out.Values[i] = ec._User_image(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5078,6 +5423,8 @@ func (ec *executionContext) _Vachil(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "images":
+			out.Values[i] = ec._Vachil_images(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5820,6 +6167,42 @@ func (ec *executionContext) unmarshalOString2string(ctx context.Context, v inter
 
 func (ec *executionContext) marshalOString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
 	return graphql.MarshalString(v)
+}
+
+func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {

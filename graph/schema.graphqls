@@ -8,6 +8,7 @@ type Vachil {
   name: String!
   capacity: Int!
   unitPrice: Float!
+  images: [String!]
 }
 
 type User {
@@ -22,6 +23,7 @@ type User {
   isActive: Boolean!
   userType: String! # ADMIN  USER
   booking: [Booking!]!
+  image: String
 }
 type TotalPrice {
   id: Int!
@@ -69,6 +71,7 @@ type Query {
   allBookingWithId(userID: Int!): [Booking!]!
   allActiveBookingWithId(userID: Int!): [Booking!]!
   userWithId(userID: Int!): User!
+  userWithUserName(userName: String!): User!
   userPasswordByName(email: String!): String!
 }
 
@@ -79,6 +82,7 @@ input NewVachil {
   regNo: String!
   capacity: Int!
   unitPrice: Float!
+  images: [String!]
 }
 
 input NewBooking {
@@ -98,6 +102,7 @@ input NewUser {
   email: String!
   mobile: String!
   password: String!
+  image: String
 }
 
 input Login {
@@ -112,6 +117,8 @@ type Mutation {
   createBooking(input: NewBooking!): Booking!
   updateBooking(bookingId: Int!, input: NewBooking!): Booking!
   deleteBooking(bookingId: Int!): Boolean!
+  updateUserProfileImage(id: Int!, image: String!): User!
+  updateUserPassword(id: Int!, password: String!): User!
 }
 
 #"Prevents access to a field if the user doesnt have the matching role"

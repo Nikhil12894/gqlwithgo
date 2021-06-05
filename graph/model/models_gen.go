@@ -33,20 +33,22 @@ type NewBooking struct {
 }
 
 type NewUser struct {
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	Email     string `json:"email"`
-	Mobile    string `json:"mobile"`
-	Password  string `json:"password"`
+	FirstName string  `json:"firstName"`
+	LastName  string  `json:"lastName"`
+	Email     string  `json:"email"`
+	Mobile    string  `json:"mobile"`
+	Password  string  `json:"password"`
+	Image     *string `json:"image"`
 }
 
 type NewVachil struct {
-	Type      string  `json:"type"`
-	Brand     string  `json:"brand"`
-	Name      string  `json:"name"`
-	RegNo     string  `json:"regNo"`
-	Capacity  int     `json:"capacity"`
-	UnitPrice float64 `json:"unitPrice"`
+	Type      string   `json:"type"`
+	Brand     string   `json:"brand"`
+	Name      string   `json:"name"`
+	RegNo     string   `json:"regNo"`
+	Capacity  int      `json:"capacity"`
+	UnitPrice float64  `json:"unitPrice"`
+	Images    []string `json:"images"`
 }
 
 type RefreshTokenInput struct {
@@ -75,6 +77,7 @@ type User struct {
 	IsActive  bool       `json:"isActive"`
 	UserType  string     `json:"userType"`
 	Booking   []*Booking `json:"booking"`
+	Image     *string    `json:"image"`
 }
 
 type Vachil struct {
@@ -87,6 +90,7 @@ type Vachil struct {
 	Name      string    `json:"name"`
 	Capacity  int       `json:"capacity"`
 	UnitPrice float64   `json:"unitPrice"`
+	Images    []string  `json:"images"`
 }
 
 type Role string

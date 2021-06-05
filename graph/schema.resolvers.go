@@ -22,6 +22,7 @@ func (r *mutationResolver) CreateVachil(ctx context.Context, input model.NewVach
 		UnitPrice: input.UnitPrice,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
+		Images:    input.Images,
 	}
 	// Create vachil/
 	err := r.DB.Create(&vachil).Error
@@ -41,6 +42,7 @@ func (r *mutationResolver) UpdateVachil(ctx context.Context, vachilID int, input
 		UnitPrice: input.UnitPrice,
 		ID:        vachilID,
 		UpdatedAt: time.Now(),
+		Images:    input.Images,
 	}
 	// update vachil/
 	err := r.DB.Save(&vachil).Error
@@ -94,6 +96,14 @@ func (r *mutationResolver) DeleteBooking(ctx context.Context, bookingID int) (bo
 		return false, err
 	}
 	return true, nil
+}
+
+func (r *mutationResolver) UpdateUserProfileImage(ctx context.Context, id int, image string) (*model.User, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) UpdateUserPassword(ctx context.Context, id int, password string) (*model.User, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *queryResolver) Vachil(ctx context.Context) ([]*model.Vachil, error) {
@@ -174,6 +184,10 @@ func (r *queryResolver) AllActiveBookingWithID(ctx context.Context, userID int) 
 }
 
 func (r *queryResolver) UserWithID(ctx context.Context, userID int) (*model.User, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) UserWithUserName(ctx context.Context, userName string) (*model.User, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
