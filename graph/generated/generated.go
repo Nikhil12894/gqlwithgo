@@ -74,6 +74,7 @@ type ComplexityRoot struct {
 		AllBookingWithID               func(childComplexity int, userID int) int
 		AvelableVachilWithTypeCapacity func(childComplexity int, typeArg string, capacity int, startDate time.Time, endDate time.Time) int
 		AvelebleVachilWithType         func(childComplexity int, typeArg string, startDate time.Time, endDate time.Time) int
+		DistinctVachilImages           func(childComplexity int) int
 		UserPasswordByName             func(childComplexity int, email string) int
 		UserWithID                     func(childComplexity int, userID int) int
 		UserWithUserName               func(childComplexity int, userName string) int
@@ -151,6 +152,7 @@ type QueryResolver interface {
 	UserWithID(ctx context.Context, userID int) (*model.User, error)
 	UserWithUserName(ctx context.Context, userName string) (*model.User, error)
 	UserPasswordByName(ctx context.Context, email string) (string, error)
+	DistinctVachilImages(ctx context.Context) ([]map[string]interface{}, error)
 }
 
 type executableSchema struct {
@@ -379,6 +381,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.AvelebleVachilWithType(childComplexity, args["type"].(string), args["startDate"].(time.Time), args["endDate"].(time.Time)), true
+
+	case "Query.distinctVachilImages":
+		if e.complexity.Query.DistinctVachilImages == nil {
+			break
+		}
+
+		return e.complexity.Query.DistinctVachilImages(childComplexity), true
 
 	case "Query.userPasswordByName":
 		if e.complexity.Query.UserPasswordByName == nil {
@@ -776,7 +785,7 @@ var sources = []*ast.Source{
   name: String!
   capacity: Int!
   unitPrice: Float!
-  images: [String!]
+  images: String!
 }
 
 type User {
@@ -791,8 +800,9 @@ type User {
   isActive: Boolean!
   userType: String! # ADMIN  USER
   booking: [Booking!]!
-  image: String
+  image: String!
 }
+
 type TotalPrice {
   id: Int!
   CreatedAt: Time!
@@ -815,6 +825,8 @@ type Booking {
   vachilID: Int!
   totalPriceID: Int!
 }
+
+scalar Map
 
 type Query {
   vachil: [Vachil!]!
@@ -841,6 +853,7 @@ type Query {
   userWithId(userID: Int!): User!
   userWithUserName(userName: String!): User!
   userPasswordByName(email: String!): String!
+  distinctVachilImages: [Map!]
 }
 
 input NewVachil {
@@ -850,7 +863,7 @@ input NewVachil {
   regNo: String!
   capacity: Int!
   unitPrice: Float!
-  images: [String!]
+  images: String
 }
 
 input NewBooking {
@@ -2657,6 +2670,35 @@ func (ec *executionContext) _Query_userPasswordByName(ctx context.Context, field
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_distinctVachilImages(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().DistinctVachilImages(rctx)
+	})
+
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]map[string]interface{})
+	fc.Result = res
+	return ec.marshalOMap2ᚕmapᚄ(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -3320,11 +3362,14 @@ func (ec *executionContext) _User_image(ctx context.Context, field graphql.Colle
 	})
 
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Vachil_id(ctx context.Context, field graphql.CollectedField, obj *model.Vachil) (ret graphql.Marshaler) {
@@ -3637,11 +3682,14 @@ func (ec *executionContext) _Vachil_images(ctx context.Context, field graphql.Co
 	})
 
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.([]string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -4825,7 +4873,7 @@ func (ec *executionContext) unmarshalInputNewVachil(ctx context.Context, obj int
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("images"))
-			it.Images, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			it.Images, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5216,6 +5264,17 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
+		case "distinctVachilImages":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_distinctVachilImages(ctx, field)
+				return res
+			})
 		case "__type":
 			out.Values[i] = ec._Query___type(ctx, field)
 		case "__schema":
@@ -5356,6 +5415,9 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "image":
 			out.Values[i] = ec._User_image(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5425,6 +5487,9 @@ func (ec *executionContext) _Vachil(ctx context.Context, sel ast.SelectionSet, o
 			}
 		case "images":
 			out.Values[i] = ec._Vachil_images(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5784,6 +5849,27 @@ func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}
 
 func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
 	res := graphql.MarshalInt(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNMap2map(ctx context.Context, v interface{}) (map[string]interface{}, error) {
+	res, err := graphql.UnmarshalMap(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNMap2map(ctx context.Context, sel ast.SelectionSet, v map[string]interface{}) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := graphql.MarshalMap(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -6160,16 +6246,7 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return graphql.MarshalBoolean(*v)
 }
 
-func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
-	res, err := graphql.UnmarshalString(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	return graphql.MarshalString(v)
-}
-
-func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+func (ec *executionContext) unmarshalOMap2ᚕmapᚄ(ctx context.Context, v interface{}) ([]map[string]interface{}, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -6182,10 +6259,10 @@ func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v
 		}
 	}
 	var err error
-	res := make([]string, len(vSlice))
+	res := make([]map[string]interface{}, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNMap2map(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -6193,16 +6270,25 @@ func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v
 	return res, nil
 }
 
-func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+func (ec *executionContext) marshalOMap2ᚕmapᚄ(ctx context.Context, sel ast.SelectionSet, v []map[string]interface{}) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := make(graphql.Array, len(v))
 	for i := range v {
-		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
+		ret[i] = ec.marshalNMap2map(ctx, sel, v[i])
 	}
 
 	return ret
+}
+
+func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
+	res, err := graphql.UnmarshalString(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	return graphql.MarshalString(v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {

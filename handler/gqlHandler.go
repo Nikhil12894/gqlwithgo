@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -45,7 +46,7 @@ func RegisterUser(c *gin.Context) {
 		})
 		return
 	}
-
+	userInput.Password = hash.HashPassword(userInput.Password)
 	// Create user/
 	err := db.DB.Create(&userInput).Error
 	if err != nil {
@@ -61,21 +62,51 @@ func RegisterUser(c *gin.Context) {
 func Login(c *gin.Context) {
 	var login *model.Login
 	if err := c.BindJSON(&login); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "parse key heartstrength from http post request error",
-		})
-		return
+		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("parse key heartstrength from http post request error"))
 	}
 	correct := hash.AuthenticateLogin(login, db.UserPasswordByName(login.Username))
 	if !correct {
-		c.JSON(http.StatusBadRequest, &hash.WrongUsernameOrPasswordError{})
+		c.AbortWithError(http.StatusBadRequest, &hash.WrongUsernameOrPasswordError{})
+
 	}
 	token, err := jwt.GenerateToken(login.Username)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+
 	}
-	fmt.Println(token)
 	c.JSON(http.StatusOK, token)
+}
+
+func AppLogin(c *gin.Context) {
+	var login *model.Login
+	if err := c.BindJSON(&login); err != nil {
+		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("parse key heartstrength from http post request error"))
+	}
+	user, err := db.UserByEmail(login.Username)
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, &hash.WrongUsernameOrPasswordError{})
+	}
+
+	correct := hash.AuthenticateLogin(login, user.Password)
+	if !correct {
+		c.AbortWithError(http.StatusBadRequest, &hash.WrongUsernameOrPasswordError{})
+
+	}
+	token, err := jwt.GenerateToken(login.Username)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"token":     token,
+		"firstName": user.FirstName,
+		"lastName":  user.LastName,
+		"email":     user.Email,
+		"mobile":    user.Mobile,
+		"image":     user.Image,
+		"usertype":  user.UserType,
+		"id":        user.ID,
+	})
 }
 
 func Refrace(c *gin.Context) {
@@ -105,12 +136,22 @@ func Testquery(c *gin.Context) {
 		})
 		return
 	}
-
-	result := map[string]interface{}{}
-	err := db.DB.Raw(reqbody["query"].(string), 3).Scan(&result).Error
-	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+	query := reqbody["query"].(string)
+	if strings.HasPrefix(query, "select") {
+		result := []map[string]interface{}{}
+		err := db.DB.Raw(query, 3).Scan(&result).Error
+		if err != nil {
+			c.JSON(http.StatusBadRequest, err)
+		}
+		fmt.Println(result)
+		c.JSON(http.StatusOK, result)
+	} else {
+		result := map[string]interface{}{}
+		err := db.DB.Exec(query, &result).Error
+		if err != nil {
+			c.JSON(http.StatusBadRequest, err)
+		}
+		fmt.Println(result)
+		c.JSON(http.StatusOK, result)
 	}
-
-	c.JSON(http.StatusOK, result)
 }

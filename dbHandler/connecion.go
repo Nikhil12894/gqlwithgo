@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Nikhil12894/gqlwithgo/graph/model"
-	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -23,7 +23,7 @@ type dbConfig struct {
 var config = dbConfig{"localhost", 5432, "postgres", "gqlwithgo", "root", "disable", "Asia/Shanghai"}
 
 func ConnectDataBase(vender string, dbname string, isProd bool) {
-	db, err := GetDatabase()
+	db, err := GetDatabase(dbname)
 
 	if err != nil {
 		panic("Failed to connect to database!")
@@ -39,8 +39,11 @@ func getDatabaseUrl() string {
 		config.host, config.user, config.password, config.dbname, config.port, config.sslmode, config.TimeZone)
 }
 
-func GetDatabase() (*gorm.DB, error) {
-	db, err := gorm.Open(postgres.Open(getDatabaseUrl()), &gorm.Config{})
+func GetDatabase(database string) (*gorm.DB, error) {
+
+	db, err := gorm.Open(sqlite.Open(database), &gorm.Config{})
+
+	// db, err := gorm.Open(postgres.Open(getDatabaseUrl()), &gorm.Config{})
 	return db, err
 }
 
@@ -72,4 +75,11 @@ func UserByEmail(email string) (*model.User, error) {
 		return nil, err
 	}
 	return user, nil
+}
+
+func GetImage(input string, vachil1 *model.Vachil) string {
+	if len(input) != 0 {
+		return vachil1.Images
+	}
+	return input
 }

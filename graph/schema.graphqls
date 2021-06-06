@@ -8,7 +8,7 @@ type Vachil {
   name: String!
   capacity: Int!
   unitPrice: Float!
-  images: [String!]
+  images: String!
 }
 
 type User {
@@ -23,8 +23,9 @@ type User {
   isActive: Boolean!
   userType: String! # ADMIN  USER
   booking: [Booking!]!
-  image: String
+  image: String!
 }
+
 type TotalPrice {
   id: Int!
   CreatedAt: Time!
@@ -47,6 +48,8 @@ type Booking {
   vachilID: Int!
   totalPriceID: Int!
 }
+
+scalar Map
 
 type Query {
   vachil: [Vachil!]!
@@ -73,6 +76,7 @@ type Query {
   userWithId(userID: Int!): User!
   userWithUserName(userName: String!): User!
   userPasswordByName(email: String!): String!
+  distinctVachilImages: [Map!]
 }
 
 input NewVachil {
@@ -82,7 +86,7 @@ input NewVachil {
   regNo: String!
   capacity: Int!
   unitPrice: Float!
-  images: [String!]
+  images: String
 }
 
 input NewBooking {

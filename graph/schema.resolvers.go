@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	db "github.com/Nikhil12894/gqlwithgo/dbHandler"
 	"github.com/Nikhil12894/gqlwithgo/graph/generated"
 	"github.com/Nikhil12894/gqlwithgo/graph/model"
 )
@@ -22,7 +23,8 @@ func (r *mutationResolver) CreateVachil(ctx context.Context, input model.NewVach
 		UnitPrice: input.UnitPrice,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-		Images:    input.Images,
+		Images:    *input.Images,
+		// create method to add images
 	}
 	// Create vachil/
 	err := r.DB.Create(&vachil).Error
@@ -33,6 +35,11 @@ func (r *mutationResolver) CreateVachil(ctx context.Context, input model.NewVach
 }
 
 func (r *mutationResolver) UpdateVachil(ctx context.Context, vachilID int, input model.NewVachil) (*model.Vachil, error) {
+	var vachil1 *model.Vachil
+	err := r.DB.Where("id = ?", vachilID).First(&vachil1).Error
+	if err != nil {
+		return nil, err
+	}
 	vachil := &model.Vachil{
 		Type:      input.Type,
 		Brand:     input.Brand,
@@ -42,10 +49,11 @@ func (r *mutationResolver) UpdateVachil(ctx context.Context, vachilID int, input
 		UnitPrice: input.UnitPrice,
 		ID:        vachilID,
 		UpdatedAt: time.Now(),
-		Images:    input.Images,
+		CreatedAt: vachil1.CreatedAt,
+		Images:    db.GetImage(*input.Images, vachil1),
 	}
 	// update vachil/
-	err := r.DB.Save(&vachil).Error
+	err = r.DB.Save(&vachil).Error
 	if err != nil {
 		return nil, err
 	}
@@ -61,13 +69,14 @@ func (r *mutationResolver) DeleteVachil(ctx context.Context, vachilID int) (bool
 }
 
 func (r *mutationResolver) CreateBooking(ctx context.Context, input model.NewBooking) (*model.Booking, error) {
+	currentTime := time.Now()
 	booking := &model.Booking{
 		StartDate: input.StartDate,
 		EndDate:   input.EndDate,
 		UserID:    input.UserID,
 		VachilID:  input.VachilID,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		CreatedAt: currentTime,
+		UpdatedAt: currentTime,
 	}
 	r.DB.Create(&booking)
 	return booking, nil
@@ -108,7 +117,10 @@ func (r *mutationResolver) UpdateUserPassword(ctx context.Context, id int, passw
 
 func (r *queryResolver) Vachil(ctx context.Context) ([]*model.Vachil, error) {
 	var vachils []*model.Vachil
-	r.DB.Find(&vachils)
+	err := r.DB.Find(&vachils).Error
+	if err != nil {
+		return nil, err
+	}
 	return vachils, nil
 }
 
@@ -162,25 +174,46 @@ func (r *queryResolver) VachilWithTypeCapacity(ctx context.Context, typeArg stri
 }
 
 func (r *queryResolver) AvelebleVachilWithType(ctx context.Context, typeArg string, startDate time.Time, endDate time.Time) ([]*model.Vachil, error) {
-	panic(fmt.Errorf("not implemented"))
+	var vachils []*model.Vachil
+	if err := r.DB.Where("type = ?", typeArg).First(&vachils).Error; err != nil {
+		return nil, err
+	}
+	return vachils, nil
 }
 
 func (r *queryResolver) AvelableVachilWithTypeCapacity(ctx context.Context, typeArg string, capacity int, startDate time.Time, endDate time.Time) ([]*model.Vachil, error) {
-	panic(fmt.Errorf("not implemented"))
+	var vachils []*model.Vachil
+	if err := r.DB.Where("type = ? AND capacity =? ", typeArg, capacity).First(&vachils).Error; err != nil {
+		return nil, err
+	}
+	return vachils, nil
 }
 
 func (r *queryResolver) AllBooking(ctx context.Context, startDate time.Time, endDate time.Time) ([]*model.Booking, error) {
 	var bookings []*model.Booking
-	r.DB.Find(&bookings)
+	err := r.DB.Find(&bookings).Error
+	if err != nil {
+		return nil, err
+	}
 	return bookings, nil
 }
 
 func (r *queryResolver) AllBookingWithID(ctx context.Context, userID int) ([]*model.Booking, error) {
-	panic(fmt.Errorf("not implemented"))
+	var bookings []*model.Booking
+	err := r.DB.Find(&bookings).Where("vachil_id=?", userID).Error
+	if err != nil {
+		return nil, err
+	}
+	return bookings, nil
 }
 
 func (r *queryResolver) AllActiveBookingWithID(ctx context.Context, userID int) ([]*model.Booking, error) {
-	panic(fmt.Errorf("not implemented"))
+	var bookings []*model.Booking
+	err := r.DB.Find(&bookings).Where("vachil_id=?", userID).Error
+	if err != nil {
+		return nil, err
+	}
+	return bookings, nil
 }
 
 func (r *queryResolver) UserWithID(ctx context.Context, userID int) (*model.User, error) {
@@ -193,6 +226,15 @@ func (r *queryResolver) UserWithUserName(ctx context.Context, userName string) (
 
 func (r *queryResolver) UserPasswordByName(ctx context.Context, email string) (string, error) {
 	return "", nil
+}
+
+func (r *queryResolver) DistinctVachilImages(ctx context.Context) ([]map[string]interface{}, error) {
+	result1 := []map[string]interface{}{}
+	err := r.DB.Raw("select distinct images as PreviewImageSrc, images as thumbnailImageSrc,name as Alt, name as Title from vachils", 3).Scan(&result1).Error
+	if err != nil {
+		return nil, err
+	}
+	return result1, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

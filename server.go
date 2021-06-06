@@ -8,6 +8,7 @@ import (
 	"github.com/Nikhil12894/gqlwithgo/config"
 	db "github.com/Nikhil12894/gqlwithgo/dbHandler"
 	"github.com/Nikhil12894/gqlwithgo/handler"
+	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 )
 
@@ -31,14 +32,17 @@ func runApp() {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 	r.Use(auth.CORSMiddleware())
+
 	r.POST("/register", handler.RegisterUser)
 	r.POST("/login", handler.Login)
+	r.POST("/appLogin", handler.AppLogin)
 	r.POST("/refrace", handler.Refrace)
 	r.POST("/testquery", handler.Testquery)
 	v1 := r.Group("v1")
+	r.Use(static.Serve("/", static.LocalFile("./public", true)))
 	v1.Use(auth.Middleware())
 	v1.POST("/query", handler.GraphqlHandler())
-	r.GET("/", handler.PlaygroundHandler())
+	r.GET("/playground", handler.PlaygroundHandler())
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", configuration.Server.Port)
 	log.Fatal(r.Run(":" + configuration.Server.Port))
 }
