@@ -22,7 +22,7 @@ type dbConfig struct {
 	TimeZone string
 }
 
-var config = dbConfig{"ec2-184-72-236-57.compute-1.amazonaws.com", 5432, "xfqhokcshowjkd", "dbfc7n6f9pt7uk", "b0e7528edabae5cd03687bdd17c70b885828ab249cdbcdbcb9cdb449de3cac84", "disable", "Asia/Shanghai"}
+var config = dbConfig{"localhost", 5432, "postgres", "gqlwithgo", "root", "disable", "Asia/Shanghai"}
 
 func ConnectDataBase(vender string, dbname string, isProd bool) {
 	db, err := GetDatabase(dbname)
@@ -43,6 +43,7 @@ func getDatabaseUrl() string {
 
 func GetDatabase(database string) (*gorm.DB, error) {
 
+	// db, err := gorm.Open(postgres.Open(getDatabaseUrl()), &gorm.Config{})
 	db, err := gorm.Open(postgres.Open("postgres://xfqhokcshowjkd:b0e7528edabae5cd03687bdd17c70b885828ab249cdbcdbcb9cdb449de3cac84@ec2-184-72-236-57.compute-1.amazonaws.com:5432/dbfc7n6f9pt7uk"), &gorm.Config{})
 	return db, err
 }
