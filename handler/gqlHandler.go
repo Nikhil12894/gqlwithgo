@@ -143,7 +143,6 @@ func Testquery(c *gin.Context) {
 		if err != nil {
 			c.JSON(http.StatusBadRequest, err)
 		}
-		fmt.Println(result)
 		c.JSON(http.StatusOK, result)
 	} else {
 		result := map[string]interface{}{}
@@ -151,7 +150,6 @@ func Testquery(c *gin.Context) {
 		if err != nil {
 			c.JSON(http.StatusBadRequest, err)
 		}
-		fmt.Println(result)
 		c.JSON(http.StatusOK, result)
 	}
 }

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Nikhil12894/gqlwithgo/graph/model"
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -20,7 +20,7 @@ type dbConfig struct {
 	TimeZone string
 }
 
-var config = dbConfig{"localhost", 5432, "postgres", "gqlwithgo", "root", "disable", "Asia/Shanghai"}
+var config = dbConfig{"localhost", 5432, "postgres", "gqlwithgo", "postgres_docker", "disable", "Asia/Shanghai"}
 
 func ConnectDataBase(vender string, dbname string, isProd bool) {
 	db, err := GetDatabase(dbname)
@@ -41,9 +41,7 @@ func getDatabaseUrl() string {
 
 func GetDatabase(database string) (*gorm.DB, error) {
 
-	db, err := gorm.Open(sqlite.Open(database), &gorm.Config{})
-
-	// db, err := gorm.Open(postgres.Open(getDatabaseUrl()), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(getDatabaseUrl()), &gorm.Config{})
 	return db, err
 }
 

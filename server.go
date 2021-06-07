@@ -43,6 +43,6 @@ func runApp() {
 	v1.Use(auth.Middleware())
 	v1.POST("/query", handler.GraphqlHandler())
 	r.GET("/playground", handler.PlaygroundHandler())
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", configuration.Server.Port)
-	log.Fatal(r.Run(":" + configuration.Server.Port))
+	log.Printf("connect to http://localhost:%s/ for GraphQL playground", defaultPort)
+	log.Fatal(r.Run(":" + defaultPort))
 }
