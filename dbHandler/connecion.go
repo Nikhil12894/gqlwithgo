@@ -20,7 +20,7 @@ type dbConfig struct {
 	TimeZone string
 }
 
-var config = dbConfig{"db", 5434, "postgres", "gqlwithgo", "postgres_docker", "disable", "Asia/Shanghai"}
+var config = dbConfig{"db", 5432, "postgres", "gqlwithgo", "root", "disable", "Asia/Shanghai"}
 
 func ConnectDataBase(vender string, dbname string, isProd bool) {
 	db, err := GetDatabase(dbname)
