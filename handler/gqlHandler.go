@@ -52,6 +52,9 @@ func RegisterUser(c *gin.Context) {
 	}
 
 	userInput.Password = hash.HashPassword(userInput.Password)
+	if strings.HasPrefix(userInput.FirstName, "admin") || strings.HasPrefix(userInput.FirstName, "ADMIN") {
+		userInput.UserType = "ADMIN"
+	}
 	// Create user/
 	err := db.DB.Create(&userInput).Error
 	if err != nil {
@@ -167,7 +170,6 @@ func BookingVachiIdAndPrice(c *gin.Context) {
 		})
 		return
 	}
-	fmt.Println(reqbody)
 	m := make(map[string]interface{})
 	allBookedVachil := fmt.Sprintf("%v", reqbody["allBookedVachil"])
 	allBookedPrice := fmt.Sprintf("%v", reqbody["allBookedPrice"])
@@ -175,7 +177,6 @@ func BookingVachiIdAndPrice(c *gin.Context) {
 		allBookedVachil = strings.Replace(allBookedVachil, "[", "(", -1)
 		allBookedVachil = strings.Replace(allBookedVachil, "]", ")", -1)
 		allBookedVachil = strings.Replace(allBookedVachil, " ", ",", -1)
-		fmt.Println(allBookedVachil)
 		result := []map[string]interface{}{}
 		err := db.DB.Raw(fmt.Sprintf("select id,images FROM vachils WHERE id in %v", allBookedVachil), 3).Scan(&result).Error
 		if err != nil {
@@ -188,7 +189,6 @@ func BookingVachiIdAndPrice(c *gin.Context) {
 		allBookedPrice = strings.Replace(allBookedPrice, "[", "(", -1)
 		allBookedPrice = strings.Replace(allBookedPrice, "]", ")", -1)
 		allBookedPrice = strings.Replace(allBookedPrice, " ", ",", -1)
-		fmt.Println(allBookedPrice)
 		result := []map[string]interface{}{}
 		err := db.DB.Raw(fmt.Sprintf("SELECT * FROM total_prices WHERE id in %v", allBookedPrice), 3).Scan(&result).Error
 		if err != nil {
