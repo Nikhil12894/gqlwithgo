@@ -55,7 +55,7 @@ func RegisterUser(c *gin.Context) {
 
 	userInput.Password = hash.HashPassword(userInput.Password)
 	// Create user/
-	err := db.DB.Create(&userInput).Error
+	err = db.DB.Create(&userInput).Error
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
 	}
