@@ -2,6 +2,8 @@ package db
 
 import (
 	"fmt"
+	"math"
+	"time"
 
 	"github.com/Nikhil12894/gqlwithgo/graph/model"
 	"gorm.io/driver/postgres"
@@ -80,4 +82,25 @@ func GetImage(input string, vachil1 *model.Vachil) string {
 		return vachil1.Images
 	}
 	return input
+}
+
+func CreateTotalPrice(startDate time.Time, endDate time.Time, vachilId int) int {
+	vachil := FindVachilById(vachilId)
+	serviceCharge := 99.49
+	if vachil != nil {
+		totalHr := endDate.Sub(startDate).Hours()
+		totalDays := math.Ceil(totalHr / 24)
+		totalCost := (vachil.UnitPrice * totalDays) + serviceCharge
+		totalPrice := &model.TotalPrice{
+			CreatedAt:     time.Now(),
+			UpdatedAt:     time.Now(),
+			ServiceCharge: serviceCharge,
+			TTLDays:       int(totalDays),
+			UnitPrice:     vachil.UnitPrice,
+			Price:         totalCost,
+		}
+		DB.Create(&totalPrice)
+		return totalPrice.ID
+	}
+	return 0
 }

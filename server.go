@@ -41,6 +41,7 @@ func runApp() {
 	v1 := r.Group("v1")
 	r.Use(static.Serve("/", static.LocalFile("./public", true)))
 	v1.Use(auth.Middleware())
+	v1.POST("/bookingVachiIdAndPrice", handler.BookingVachiIdAndPrice)
 	v1.POST("/query", handler.GraphqlHandler())
 	r.GET("/playground", handler.PlaygroundHandler())
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", defaultPort)

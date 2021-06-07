@@ -78,6 +78,10 @@ func (r *mutationResolver) CreateBooking(ctx context.Context, input model.NewBoo
 		CreatedAt: currentTime,
 		UpdatedAt: currentTime,
 	}
+	TotalPriceID := db.CreateTotalPrice(input.StartDate, input.EndDate, input.VachilID)
+	if TotalPriceID != 0 {
+		booking.TotalPriceID = TotalPriceID
+	}
 	r.DB.Create(&booking)
 	return booking, nil
 }
@@ -90,6 +94,10 @@ func (r *mutationResolver) UpdateBooking(ctx context.Context, bookingID int, inp
 		VachilID:  input.VachilID,
 		UpdatedAt: time.Now(),
 		ID:        bookingID,
+	}
+	TotalPriceID := db.CreateTotalPrice(input.StartDate, input.EndDate, input.VachilID)
+	if TotalPriceID != 0 {
+		vachil.TotalPriceID = TotalPriceID
 	}
 	// update vachil/
 	err := r.DB.Save(&vachil).Error

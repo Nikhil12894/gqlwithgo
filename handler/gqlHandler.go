@@ -158,3 +158,43 @@ func Testquery(c *gin.Context) {
 		c.JSON(http.StatusOK, result)
 	}
 }
+
+func BookingVachiIdAndPrice(c *gin.Context) {
+	reqbody := map[string]interface{}{}
+	if err := c.BindJSON(&reqbody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "parse key heartstrength from http post request error",
+		})
+		return
+	}
+	fmt.Println(reqbody)
+	m := make(map[string]interface{})
+	allBookedVachil := fmt.Sprintf("%v", reqbody["allBookedVachil"])
+	allBookedPrice := fmt.Sprintf("%v", reqbody["allBookedPrice"])
+	if len(allBookedVachil) > 2 {
+		allBookedVachil = strings.Replace(allBookedVachil, "[", "(", -1)
+		allBookedVachil = strings.Replace(allBookedVachil, "]", ")", -1)
+		allBookedVachil = strings.Replace(allBookedVachil, " ", ",", -1)
+		fmt.Println(allBookedVachil)
+		result := []map[string]interface{}{}
+		err := db.DB.Raw(fmt.Sprintf("select id,images FROM vachils WHERE id in %v", allBookedVachil), 3).Scan(&result).Error
+		if err != nil {
+			c.JSON(http.StatusBadRequest, err)
+		}
+		m["allBookedVachil"] = result
+	}
+
+	if len(allBookedPrice) > 2 {
+		allBookedPrice = strings.Replace(allBookedPrice, "[", "(", -1)
+		allBookedPrice = strings.Replace(allBookedPrice, "]", ")", -1)
+		allBookedPrice = strings.Replace(allBookedPrice, " ", ",", -1)
+		fmt.Println(allBookedPrice)
+		result := []map[string]interface{}{}
+		err := db.DB.Raw(fmt.Sprintf("SELECT * FROM total_prices WHERE id in %v", allBookedPrice), 3).Scan(&result).Error
+		if err != nil {
+			c.JSON(http.StatusBadRequest, err)
+		}
+		m["allBookedPrice"] = result
+	}
+	c.JSON(http.StatusOK, m)
+}
