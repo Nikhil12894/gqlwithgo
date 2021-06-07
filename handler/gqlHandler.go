@@ -46,16 +46,14 @@ func RegisterUser(c *gin.Context) {
 		})
 		return
 	}
-	user, err := db.UserByEmail(userInput.Email)
-	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, &hash.WrongUsernameOrPasswordError{})
-	} else if user != nil {
+	user, _ := db.UserByEmail(userInput.Email)
+	if user != nil {
 		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("user alredy exist"))
 	}
 
 	userInput.Password = hash.HashPassword(userInput.Password)
 	// Create user/
-	err = db.DB.Create(&userInput).Error
+	err := db.DB.Create(&userInput).Error
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
 	}
