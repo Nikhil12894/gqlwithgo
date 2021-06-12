@@ -41,6 +41,16 @@ type NewUser struct {
 	Image     *string `json:"image"`
 }
 
+type NewUserWithType struct {
+	FirstName string  `json:"firstName"`
+	LastName  string  `json:"lastName"`
+	Email     string  `json:"email"`
+	Mobile    string  `json:"mobile"`
+	Password  string  `json:"password"`
+	Image     *string `json:"image"`
+	UserType  string  `json:"userType"`
+}
+
 type NewVachil struct {
 	Type      string  `json:"type"`
 	Brand     string  `json:"brand"`

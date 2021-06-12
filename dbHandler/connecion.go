@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Nikhil12894/gqlwithgo/graph/model"
+	"github.com/Nikhil12894/gqlwithgo/hash"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -85,6 +86,13 @@ func GetImage(input string, vachil1 *model.Vachil) string {
 	return vachil1.Images
 }
 
+func GetUserImage(input string, vachil1 *model.User) string {
+	if len(input) != 0 {
+		return input
+	}
+	return vachil1.Image
+}
+
 func CreateTotalPrice(startDate time.Time, endDate time.Time, vachilId int) int {
 	vachil := FindVachilById(vachilId)
 	serviceCharge := 99.49
@@ -104,4 +112,11 @@ func CreateTotalPrice(startDate time.Time, endDate time.Time, vachilId int) int 
 		return totalPrice.ID
 	}
 	return 0
+}
+
+func GetUserPassword(password string, user *model.User) string {
+	if len(password) != 0 {
+		return hash.HashPassword(password)
+	}
+	return user.Password
 }

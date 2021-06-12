@@ -9,7 +9,6 @@ import (
 func HashPassword(password string) string {
 	if len(password) == 0 {
 		return password
-
 	}
 	bytes, _ := bcrypt.GenerateFromPassword([]byte(password), 14)
 	return string(bytes)

@@ -13,7 +13,6 @@ func Middleware() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		header := c.Request.Header.Get("token")
-		fmt.Println(header)
 		// Allow unauthenticated users in
 		if header == "" {
 			c.AbortWithError(http.StatusBadRequest, fmt.Errorf(" ******************************************************************** Token is empety"))
